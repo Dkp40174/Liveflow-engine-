@@ -1,35 +1,22 @@
-name: Build Android APK
-on:
-  push:
-    branches: [ "main" ]
-  workflow_dispatch:
-
+name: Build APK
+on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      
-      # 1. System Ready Karo
-      - name: Install System Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip build-essential git python3 python3-dev ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libffi-dev libssl-dev
-      
-      # 2. Buildozer Install Karo
-      - name: Install Buildozer
-        run: |
-          pip3 install --upgrade buildozer cython==0.29.33
 
-      # 3. APK Banao (Yes command automatically 'y' daba degi)
-      - name: Build APK
-        run: |
-          yes | buildozer android debug
-
-      # 4. APK Upload Karo (Artifacts me)
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      # Ye "Docker" use karega jisme sab settings pehle se fix hain
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
         with:
-          name: Liveflow-APK
-          path: bin/*.apk
+          command: buildozer android debug
+          buildozer_version: master
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: package
+          path: ${{ steps.buildozer.outputs.filename }}
           
